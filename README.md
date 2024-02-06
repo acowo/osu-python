@@ -1,2 +1,2 @@
 # osu-python
-An osu! clone written in python to practice Pygame
+An osu! clone written in Python to practice Pygame
