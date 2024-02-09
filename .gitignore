@@ -1,1 +1,5 @@
 Beatmap folders/
+
+modules/__pycache__/
+
+__pycache__

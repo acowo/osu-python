@@ -1,9 +1,9 @@
 import pygame
+from modules.hitobjects import HitObject
+from modules.json_import import getBeatmapData
+from game import Game
 import os
-from math import dist
-import json
-from tkinter import filedialog
-from hitobjects import HitObject
+
 BASE_WIDTH = 512
 BASE_HEIGHT = 384
 FPS = 60
@@ -13,7 +13,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BACKGROUND = (WHITE)
 
-
 pygame.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
@@ -21,21 +20,14 @@ screen_width, screen_height = screen.get_size()
 play_area_width = min(screen_width, int(screen_height * (4 / 3)))
 play_area_height = int(play_area_width * (3 / 4))
 
-json_file_path = str(filedialog.askopenfilename())
-beatmap_dir = os.path.dirname(json_file_path)
-with open(json_file_path, 'r') as j:
-    beatmapProperties = json.loads(j.read())
-music = f'/{beatmapProperties["general"]["AudioFilename"].strip()}'
+beatmapPath, beatmapProperties = getBeatmapData()
+beatmapDir = os.path.dirname(beatmapPath)
+audioFileName = beatmapProperties["general"]["AudioFilename"].strip()
+audioDir = f'{beatmapDir}\{audioFileName}'.replace("/", "\\")
 
-class Game:
-    def __init__(self):
-        self.time_at_start = pygame.time.get_ticks()
-        self.playing = False
+music = pygame.mixer.Sound(audioDir)
 
-
-hitObjectList = []
-
-hitObjectList = []
+hitObjectList = []    
 
 for i in range(len(beatmapProperties["hitobjects"])):
     newHitObject = HitObject(
@@ -50,21 +42,16 @@ for i in range(len(beatmapProperties["hitobjects"])):
     )
     hitObjectList.append(newHitObject)
 
-
 running = True
-game = Game()
+game = Game(hitObjectList, music, screen)
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        
-        if not game.playing:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                        game.playing = True
-                        music.play()
-                 
-        # else:
-        #     hit_time = hitObjectList[][2]
-        #     time_elapsed = pygame.time.get_ticks()-time_at_start
+        else:
+            game.handle_event(event)
+    if game.playing:
+        game.render()
+    
+    pygame.display.flip()
